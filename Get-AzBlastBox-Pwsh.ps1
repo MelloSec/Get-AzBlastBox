@@ -81,10 +81,14 @@ $nsg = New-AzNetworkSecurityGroup -ResourceGroupName $resourceGroupName -Locatio
     "NSG-FrontEnd" -SecurityRules $rule1,$rule2,$rule3 
 $nsg | Set-AzNetworkSecurityGroup
 
-# Create our two subnets
-$frontendSubnet       = New-AzVirtualNetworkSubnetConfig -Name FrontEnd -AddressPrefix "10.0.1.0/24" -NetworkSecurityGroup $nsg
-$backendSubnet        = New-AzVirtualNetworkSubnetConfig -Name BackEnd  -AddressPrefix "10.0.2.0/24" -NetworkSecurityGroup $nsg
-New-AzVirtualNetwork -Name $VNetName -ResourceGroupName $resourceGroupName -Location $location -AddressPrefix "10.0.0.0/16" -Subnet $frontendSubnet,$backendSubnet
+# Create our Networking
+# TODO Add parameter bindings to the function
+function Create-Networking {
+    $frontendSubnet       = New-AzVirtualNetworkSubnetConfig -Name FrontEnd -AddressPrefix "10.0.1.0/24" -NetworkSecurityGroup $nsg
+    $backendSubnet        = New-AzVirtualNetworkSubnetConfig -Name BackEnd  -AddressPrefix "10.0.2.0/24" -NetworkSecurityGroup $nsg
+    New-AzVirtualNetwork -Name $VNetName -ResourceGroupName $resourceGroupName -Location $location -AddressPrefix "10.0.0.0/16" -Subnet $frontendSubnet,$backendSubnet
+}
+Create-Networking
 
 
 # Create the VM with the CLI since PoSh won't take the custom image string / some osProfile error
