@@ -2,13 +2,13 @@ $AdminUsername = Get-Content './blastuser.api'
 $AdminPassword = Get-Content './blastpass.api'
 $location = "East US"
 $subscription = (Get-AzSubscription -TenantId $tenant | where-object -Property "State" -eq "Enabled"| select-object -Property Id)
-$VMName = 'BlastBox'
-$resourceGroupName = 'BlastBox'
+$VMName = 'BlastBox-CLI'
+$resourceGroupName = 'BlastBox-CLI'
 $myip = curl 'http://ifconfig.me/ip'
-$pubName = 'BlastBox-IP'
-$nsgName = 'BlastBox-NSG'
-$vnetName = 'BlastBox-VNET'
-$subnetName = 'BlastBox-SubNet'
+$pubName = 'BlastBox-CLI-IP'
+$nsgName = 'BlastBox-CLI-NSG'
+$vnetName = 'BlastBox-CLI-VNET'
+$subnetName = 'BlastBox-CLI-SubNet'
 $malwareDev = Get-Content "./malwaredev.api" 
 
 
@@ -33,6 +33,8 @@ $vm = az vm create --resource-group $resourceGroupName --name $VMName --admin-us
 $ip = Get-AzPublicIpAddress | Where-object {$_.Name -eq "$pubName"}
 
 az vm open-port --port 3389 --resource-group $ResourceGroupName --name $VMName
+
+az vm list-ip-address --resource-group $ResourceGroupName --name $VMName
 
 $ip.IpAddress | mstsc
 # az group delete --name $ResourceGroupName --yes
