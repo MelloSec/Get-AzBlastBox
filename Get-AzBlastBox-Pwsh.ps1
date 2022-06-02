@@ -21,7 +21,7 @@ $malwareDev = Get-Content "./malwaredev.api"
 $rg = if(!(Get-AzResourceGroup -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue))
   { New-AzResourceGroup -name $resourceGroupName -location $location }
 
-# Create our NSG Rules
+# Using our current host's public ip, we create and open NSG rules allowing RDP, SSH and HTTP/s traffic from that source address 
 
 function Allow-RDP{
   [CmdletBinding()]
