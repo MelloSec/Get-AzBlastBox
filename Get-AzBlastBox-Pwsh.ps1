@@ -30,10 +30,9 @@ function Allow-RDP{
   )
   New-AzNetworkSecurityRuleConfig -Name http-rule -Description "Allow RDP" `
     -Access Allow -Protocol Tcp -Direction Inbound -Priority 101 -SourceAddressPrefix `
-    "$ip" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389;
-    Write-Output 'Opening ports for "$ip"'
+    "$ip" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389
 }
-$rule1 = Allow-Rdp $myip
+$rule1 = Allow-RDP $myip
 
 function Allow-HTTP{
   [CmdletBinding()]
@@ -41,10 +40,9 @@ function Allow-HTTP{
       [Parameter(Mandatory)]
       [String] $ip 
   )
-  New-AzNetworkSecurityRuleConfig -Name http-rule -Description "Allow HTTP" `
+  New-AzNetworkSecurityRuleConfig -Name http-rule -Description "Allow HTTP2" `
     -Access Allow -Protocol Tcp -Direction Inbound -Priority 102 -SourceAddressPrefix `
-    "$ip" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 80;
-    Write-Output 'Opening ports for "$ip"'
+    "$ip" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 80
 }
 $rule2 = Allow-HTTP $myip
 
@@ -56,10 +54,9 @@ function Allow-HTTPS{
   )
   New-AzNetworkSecurityRuleConfig -Name http-rule -Description "Allow HTTP" `
     -Access Allow -Protocol Tcp -Direction Inbound -Priority 103 -SourceAddressPrefix `
-    "$ip" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 443;
-    Write-Output 'Opening ports for "$ip"'
+    "$ip" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 443
 }
-$rule3 = Allow-HTTPs $myip
+$rule3 = Allow-HTTPS $myip
 
 function Allow-Custom{
   [CmdletBinding()]
@@ -73,11 +70,10 @@ function Allow-Custom{
     "$ip" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange $port;
     Write-Output "Opening $port for $ip"
 }
-$rule4 = Allow-Custom -ip $myip -port $port 
+$rule4 = Allow-Custom -ip $myip -port 22 
 
 # Create and set the Network Security Group
-$nsg = New-AzNetworkSecurityGroup -ResourceGroupName $resourceGroupName -Location $location -Name `
-    "NSG-FrontEnd" -SecurityRules $rule1,$rule2,$rule3 
+$nsg = New-AzNetworkSecurityGroup -ResourceGroupName $resourceGroupName -Location $location -Name "$nsgName" -SecurityRules $rule1,$rule2,$rule3 
 $nsg | Set-AzNetworkSecurityGroup
 
 # Create our Networking
@@ -93,12 +89,13 @@ Create-Networking
 $vm = az vm create --resource-group $resourceGroupName --vnet-name $VNetName --subnet $frontendSubnet.name --nsg $nsg.name --name $VMName --admin-username $AdminUsername --admin-password $AdminPassword --public-ip-sku Standard --image  --specialize 
 
 # Grab IP of VM and open RDP to that address
-$ip = Get-AzPublicIpAddress -Name $pubip
+$ip = Get-AzPublicIpAddress -Name $pubName
 $ip.Name | mstsc 
 
 # Create a function to grab your test Resource Group and trash it. 
 # When you're done with it, just type "Clean-Up" in the terminal, powershell will grab the RG we just created and destroy it
 function Clean-Up {
   Get-AzResourceGroup -Name $resourceGroupName | Remove-AzResourceGroup
+  Get-AzNetworkSecurityGroup -Name $nsgName | Remove-AzNetworkSecurityGroup
 }
 
