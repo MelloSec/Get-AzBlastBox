@@ -37,4 +37,8 @@ az vm open-port --port 3389 --resource-group $ResourceGroupName --name $VMName
 az vm list-ip-address --resource-group $ResourceGroupName --name $VMName
 
 $ip.IpAddress | mstsc
-# az group delete --name $ResourceGroupName --yes
+
+# Need to clean up the networking resources too
+function Clean-Up-CLI {
+    az group delete --name $resourceGroupName --yes
+}

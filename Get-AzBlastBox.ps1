@@ -28,7 +28,7 @@ function Allow-RDP{
       [Parameter(Mandatory)]
       [String] $ip 
   )
-  New-AzNetworkSecurityRuleConfig -Name http-rule -Description "Allow RDP" `
+  New-AzNetworkSecurityRuleConfig -Name rdp-rule -Description "Allow RDP" `
     -Access Allow -Protocol Tcp -Direction Inbound -Priority 101 -SourceAddressPrefix `
     "$ip" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389
 }
@@ -52,7 +52,7 @@ function Allow-HTTPS{
       [Parameter(Mandatory)]
       [String] $ip 
   )
-  New-AzNetworkSecurityRuleConfig -Name http-rule -Description "Allow HTTP" `
+  New-AzNetworkSecurityRuleConfig -Name https-rule -Description "Allow HTTPs" `
     -Access Allow -Protocol Tcp -Direction Inbound -Priority 103 -SourceAddressPrefix `
     "$ip" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 443
 }
@@ -65,7 +65,7 @@ function Allow-Custom{
       [String] $ip, 
       [String] $port
   )
-  New-AzNetworkSecurityRuleConfig -Name http-rule -Description "Allow Custom NSG rules" `
+  New-AzNetworkSecurityRuleConfig -Name custom-rule -Description "Allow Custom NSG rules" `
     -Access Allow -Protocol Tcp -Direction Inbound -Priority 104 -SourceAddressPrefix `
     "$ip" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange $port;
     Write-Output "Opening $port for $ip"
@@ -73,12 +73,12 @@ function Allow-Custom{
 $rule4 = Allow-Custom -ip $myip -port 22 
 
 # Create and set the Network Security Group
-$nsg = New-AzNetworkSecurityGroup -ResourceGroupName $resourceGroupName -Location $location -Name "$nsgName" -SecurityRules $rule1,$rule2,$rule3 
+$nsg = New-AzNetworkSecurityGroup -ResourceGroupName $resourceGroupName -Location $location -Name NSG-FrontEnd -SecurityRules $rule1,$rule2,$rule3 
 $nsg | Set-AzNetworkSecurityGroup
 
 # Create our Networking
 # TODO Add parameter bindings to the function
-function Create-Networking {
+function Create-Networking{
     $frontendSubnet       = New-AzVirtualNetworkSubnetConfig -Name FrontEnd -AddressPrefix "10.0.1.0/24" -NetworkSecurityGroup $nsg
     $backendSubnet        = New-AzVirtualNetworkSubnetConfig -Name BackEnd  -AddressPrefix "10.0.2.0/24" -NetworkSecurityGroup $nsg
     New-AzVirtualNetwork -Name $VNetName -ResourceGroupName $resourceGroupName -Location $location -AddressPrefix "10.0.0.0/16" -Subnet $frontendSubnet,$backendSubnet
@@ -86,7 +86,9 @@ function Create-Networking {
 Create-Networking
 
 # Create the VM with the CLI since PoSh won't take the custom image string / some osProfile error
-$vm = az vm create --resource-group $resourceGroupName --vnet-name $VNetName --subnet $frontendSubnet.name --nsg $nsg.name --name $VMName --admin-username $AdminUsername --admin-password $AdminPassword --public-ip-sku Standard --image  --specialize 
+
+$subName = $frontendSubnet.name
+$vm = az vm create --resource-group $resourceGroupName --vnet-name $VNetName --subnet Subnet --nsg $nsgName --name $VMName --admin-username $AdminUsername --admin-password $AdminPassword --public-ip-sku Standard --image $malwareDev --specialize 
 
 # Grab IP of VM and open RDP to that address
 $ip = Get-AzPublicIpAddress -Name $pubName
@@ -96,6 +98,7 @@ $ip.Name | mstsc
 # When you're done with it, just type "Clean-Up" in the terminal, powershell will grab the RG we just created and destroy it
 function Clean-Up {
   Get-AzResourceGroup -Name $resourceGroupName | Remove-AzResourceGroup
-  Get-AzNetworkSecurityGroup -Name $nsgName | Remove-AzNetworkSecurityGroup
+  Get-AzVirtualNetwork -Name $VNETName | Remove-AzVirtualNetwork
+  Get-AzNetworkSecurityGroup -Name $nsgName | Remove-AzNetworkSecurityGroup  
 }
 
