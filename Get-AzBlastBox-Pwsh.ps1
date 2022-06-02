@@ -16,7 +16,6 @@ $nsgName = -join("$VMName","-NSG")
 $subnetName = -join("$VMName","-Subnet")
 $malwareDev = Get-Content "./malwaredev.api"
 
-
 # Check to see if the resource group exists, if it doesn't it will create it. If it does, the script will ask if you want to add it into the existing group or not.
 $rg = if(!(Get-AzResourceGroup -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue))
   { New-AzResourceGroup -name $resourceGroupName -location $location }
@@ -90,15 +89,12 @@ function Create-Networking {
 }
 Create-Networking
 
-
 # Create the VM with the CLI since PoSh won't take the custom image string / some osProfile error
 $vm = az vm create --resource-group $resourceGroupName --vnet-name $VNetName --subnet $frontendSubnet.name --nsg $nsg.name --name $VMName --admin-username $AdminUsername --admin-password $AdminPassword --public-ip-sku Standard --image  --specialize 
-
 
 # Grab IP of VM and open RDP to that address
 $ip = Get-AzPublicIpAddress -Name $pubip
 $ip.Name | mstsc 
-
 
 # Create a function to grab your test Resource Group and trash it. 
 # When you're done with it, just type "Clean-Up" in the terminal, powershell will grab the RG we just created and destroy it
