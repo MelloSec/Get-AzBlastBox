@@ -8,13 +8,16 @@ $VMName = 'BlastBox'
 $resourceGroupName = -join("$VMName","-RG")
 $myip = curl 'http://ifconfig.me/ip'
 $VNETName = -join("$VMName","-VNET")
-$gallery = Get-AzGallery -ResourceGroupName MELLONAUT -Name malwaremachines
-$image = get-azgalleryimageversion -galleryname malwaremachines -resourcegroupname mellonaut -galleryImageDefinitionName malwaredevelopment
-$imageid = $image.Id.tostring()
 $pubName = -join("$VMName","-IP")
 $nsgName = -join("$VMName","-NSG")
 $subnetName = -join("$VMName","-Subnet")
-$malwareDev = Get-Content "./malwaredev.api"
+$gallery1 = Get-AzGallery -ResourceGroupName 'Images' -Name 'DevBoxes'
+$gallery2 = Get-AzGallery -ResourceGroupName 'mellonaut' -Name 'malwaremachines'
+$Server2019 = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegroupname $gallery1.ResourceGroupName -galleryImageDefinitionName 'DevServer2019'
+$VS2019 = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegroupname $gallery1.ResourceGroupName -galleryImageDefinitionName 'VS2019'
+$MalwareDev = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegroupname $gallery1.ResourceGroupName -galleryImageDefinitionName 'MalwareDev'
+$CloudDev = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegroupname $gallery1.ResourceGroupName -galleryImageDefinitionName 'CloudDev'
+$BlastBox = get-azgalleryimageversion -galleryname $gallery2.Name -resourcegroupname $gallery2.ResourceGroupName -galleryImageDefinitionName 'malwaredevelopment'
 
 # Check to see if the resource group exists, if it doesn't it will create it. If it does, the script will ask if you want to add it into the existing group or not.
 $rg = if(!(Get-AzResourceGroup -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue))
