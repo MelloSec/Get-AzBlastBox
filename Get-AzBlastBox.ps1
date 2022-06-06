@@ -43,7 +43,7 @@ function Allow-HTTP{
       [Parameter(Mandatory)]
       [String] $ip 
   )
-  New-AzNetworkSecurityRuleConfig -Name http-rule -Description "Allow HTTP2" `
+  New-AzNetworkSecurityRuleConfig -Name http-rule -Description "Allow HTTP" `
     -Access Allow -Protocol Tcp -Direction Inbound -Priority 102 -SourceAddressPrefix `
     "$ip" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 80
 }
@@ -76,6 +76,7 @@ function Allow-Custom{
 $rule4 = Allow-Custom -ip $myip -port 22 
 
 # Create and set the Network Security Group
+# TODO Splat these
 $nsg = New-AzNetworkSecurityGroup -ResourceGroupName $resourceGroupName -Location $location -Name NSG-FrontEnd -SecurityRules $rule1,$rule2,$rule3 
 $nsg | Set-AzNetworkSecurityGroup
 
@@ -98,7 +99,7 @@ $ip = Get-AzPublicIpAddress -Name $pubName
 $ip.Name | mstsc 
 
 # Create a function to grab your test Resource Group and trash it. 
-# When you're done with it, just type "Clean-Up" in the terminal, powershell will grab the RG we just created and destroy it
+# When you're done, just type "Clean-Up" in the terminal, powershell will grab the RG we just created and destroy it
 function Clean-Up {
   Get-AzResourceGroup -Name $resourceGroupName | Remove-AzResourceGroup
   Get-AzVirtualNetwork -Name $VNETName | Remove-AzVirtualNetwork
