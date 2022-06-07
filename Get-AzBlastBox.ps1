@@ -85,14 +85,23 @@ $nsg | Set-AzNetworkSecurityGroup
 function Create-Networking{
     $frontendSubnet       = New-AzVirtualNetworkSubnetConfig -Name FrontEnd -AddressPrefix "10.0.1.0/24" -NetworkSecurityGroup $nsg
     $backendSubnet        = New-AzVirtualNetworkSubnetConfig -Name BackEnd  -AddressPrefix "10.0.2.0/24" -NetworkSecurityGroup $nsg
+    $subName              = $frontendSubnet.name
     New-AzVirtualNetwork -Name $VNetName -ResourceGroupName $resourceGroupName -Location $location -AddressPrefix "10.0.0.0/16" -Subnet $frontendSubnet,$backendSubnet
-}
+    
+  }
 Create-Networking
 
 # Create the VM with the CLI since PoSh won't take the custom image string / some osProfile error
 
-$subName = $frontendSubnet.name
-$vm = az vm create --resource-group $resourceGroupName --vnet-name $VNetName --subnet Subnet --nsg $nsgName --name $VMName --admin-username $AdminUsername --admin-password $AdminPassword --public-ip-sku Standard --image $malwareDev --specialize 
+function Create-VM {
+  [CmdletBinding()]
+  Param(
+      [Parameter(Mandatory)]$image = $MalwareDev
+  )
+$vm = New-AzVm -Name $VMName -ResourceGroupName $resourceGroupName -Size Standard_B2ms -VirtualNetworkName $VNetName -SubnetName Subnet -SecurityGroupName $nsgName `
+-ImageReferenceId $image -NetworkInterfaceDeleteOption Delete -OSDiskDeleteOption Delete # -AsJob
+}
+Create-VM $image
 
 # Grab IP of VM and open RDP to that address
 $ip = Get-AzPublicIpAddress -Name $pubName
