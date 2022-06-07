@@ -8,13 +8,16 @@ $VMName = 'BlastBox'
 $resourceGroupName = -join("$VMName","-RG")
 $myip = curl 'http://ifconfig.me/ip'
 $VNETName = -join("$VMName","-VNET")
-$gallery = Get-AzGallery -ResourceGroupName MELLONAUT -Name malwaremachines
-$image = get-azgalleryimageversion -galleryname malwaremachines -resourcegroupname mellonaut -galleryImageDefinitionName malwaredevelopment
-$imageid = $image.Id.tostring()
 $pubName = -join("$VMName","-IP")
 $nsgName = -join("$VMName","-NSG")
 $subnetName = -join("$VMName","-Subnet")
-$malwareDev = Get-Content "./malwaredev.api"
+$gallery1 = Get-AzGallery -ResourceGroupName 'Images' -Name 'DevBoxes'
+$gallery2 = Get-AzGallery -ResourceGroupName 'mellonaut' -Name 'malwaremachines'
+$Server2019 = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegroupname $gallery1.ResourceGroupName -galleryImageDefinitionName 'DevServer2019'
+$VS2019 = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegroupname $gallery1.ResourceGroupName -galleryImageDefinitionName 'VS2019'
+$MalwareDev = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegroupname $gallery1.ResourceGroupName -galleryImageDefinitionName 'MalwareDev'
+$CloudDev = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegroupname $gallery1.ResourceGroupName -galleryImageDefinitionName 'CloudDev'
+$BlastBox = get-azgalleryimageversion -galleryname $gallery2.Name -resourcegroupname $gallery2.ResourceGroupName -galleryImageDefinitionName 'malwaredevelopment'
 
 # Check to see if the resource group exists, if it doesn't it will create it. If it does, the script will ask if you want to add it into the existing group or not.
 $rg = if(!(Get-AzResourceGroup -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue))
@@ -40,7 +43,7 @@ function Allow-HTTP{
       [Parameter(Mandatory)]
       [String] $ip 
   )
-  New-AzNetworkSecurityRuleConfig -Name http-rule -Description "Allow HTTP2" `
+  New-AzNetworkSecurityRuleConfig -Name http-rule -Description "Allow HTTP" `
     -Access Allow -Protocol Tcp -Direction Inbound -Priority 102 -SourceAddressPrefix `
     "$ip" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 80
 }
@@ -73,6 +76,7 @@ function Allow-Custom{
 $rule4 = Allow-Custom -ip $myip -port 22 
 
 # Create and set the Network Security Group
+# TODO Splat these
 $nsg = New-AzNetworkSecurityGroup -ResourceGroupName $resourceGroupName -Location $location -Name NSG-FrontEnd -SecurityRules $rule1,$rule2,$rule3 
 $nsg | Set-AzNetworkSecurityGroup
 
@@ -81,21 +85,30 @@ $nsg | Set-AzNetworkSecurityGroup
 function Create-Networking{
     $frontendSubnet       = New-AzVirtualNetworkSubnetConfig -Name FrontEnd -AddressPrefix "10.0.1.0/24" -NetworkSecurityGroup $nsg
     $backendSubnet        = New-AzVirtualNetworkSubnetConfig -Name BackEnd  -AddressPrefix "10.0.2.0/24" -NetworkSecurityGroup $nsg
+    $subName              = $frontendSubnet.name
     New-AzVirtualNetwork -Name $VNetName -ResourceGroupName $resourceGroupName -Location $location -AddressPrefix "10.0.0.0/16" -Subnet $frontendSubnet,$backendSubnet
-}
+    
+  }
 Create-Networking
 
 # Create the VM with the CLI since PoSh won't take the custom image string / some osProfile error
 
-$subName = $frontendSubnet.name
-$vm = az vm create --resource-group $resourceGroupName --vnet-name $VNetName --subnet Subnet --nsg $nsgName --name $VMName --admin-username $AdminUsername --admin-password $AdminPassword --public-ip-sku Standard --image $malwareDev --specialize 
+function Create-VM {
+  [CmdletBinding()]
+  Param(
+      [Parameter(Mandatory)]$image = $MalwareDev
+  )
+$vm = New-AzVm -Name $VMName -ResourceGroupName $resourceGroupName -Size Standard_B2ms -VirtualNetworkName $VNetName -SubnetName Subnet -SecurityGroupName $nsgName `
+-ImageReferenceId $image -NetworkInterfaceDeleteOption Delete -OSDiskDeleteOption Delete # -AsJob
+}
+Create-VM $image
 
 # Grab IP of VM and open RDP to that address
 $ip = Get-AzPublicIpAddress -Name $pubName
 $ip.Name | mstsc 
 
 # Create a function to grab your test Resource Group and trash it. 
-# When you're done with it, just type "Clean-Up" in the terminal, powershell will grab the RG we just created and destroy it
+# When you're done, just type "Clean-Up" in the terminal, powershell will grab the RG we just created and destroy it
 function Clean-Up {
   Get-AzResourceGroup -Name $resourceGroupName | Remove-AzResourceGroup
   Get-AzVirtualNetwork -Name $VNETName | Remove-AzVirtualNetwork
