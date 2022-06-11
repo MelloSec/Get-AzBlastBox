@@ -17,14 +17,14 @@ $Server2019 = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegro
 $VS2019 = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegroupname $gallery1.ResourceGroupName -galleryImageDefinitionName 'VS2019'
 $MalwareDev = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegroupname $gallery1.ResourceGroupName -galleryImageDefinitionName 'MalwareDev'
 $CloudDev = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegroupname $gallery1.ResourceGroupName -galleryImageDefinitionName 'CloudDev'
-$BlastBox = get-azgalleryimageversion -galleryname $gallery2.Name -resourcegroupname $gallery2.ResourceGroupName -galleryImageDefinitionName 'malwaredevelopment'
+
+# Select which Image to use, this gets used in the creation of the VM function later on. We should figure out how to do it better, with parameters on that function and a default value to malwaredev
+$image = $MalwareDev
 
 # Check to see if the resource group exists, if it doesn't it will create it. If it does, the script will ask if you want to add it into the existing group or not.
 $rg = if(!(Get-AzResourceGroup -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue))
   { New-AzResourceGroup -name $resourceGroupName -location $location }
-
-# Using our current host's public ip, we create and open NSG rules allowing RDP, SSH and HTTP/s traffic from that source address 
-
+  # Using our current host's public ip, we create and open NSG rules allowing RDP, SSH and HTTP/s traffic from that source address 
 function Allow-RDP{
   [CmdletBinding()]
   Param(
@@ -96,12 +96,13 @@ Create-Networking
 function Create-VM {
   [CmdletBinding()]
   Param(
-      [Parameter(Mandatory)]$image = $MalwareDev
+      [Parameter(Mandatory)]$image
   )
-$vm = New-AzVm -Name $VMName -ResourceGroupName $resourceGroupName -Size Standard_B2ms -VirtualNetworkName $VNetName -SubnetName Subnet -SecurityGroupName $nsgName `
+if(!(Get-AzVm -Name $VMName -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue)){ $vm = New-AzVm -Name $VMName -ResourceGroupName $resourceGroupName -Size Standard_B2ms -VirtualNetworkName $VNetName -SubnetName Subnet -SecurityGroupName $nsgName `
 -ImageReferenceId $image -NetworkInterfaceDeleteOption Delete -OSDiskDeleteOption Delete # -AsJob
+ }
 }
-Create-VM $image
+Create-VM $image.Id
 
 # Grab IP of VM and open RDP to that address
 $ip = Get-AzPublicIpAddress -Name $pubName
