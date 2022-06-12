@@ -98,9 +98,21 @@ $rule4 = Allow-Custom -ip $myip -port 22
 
 # Create and set the Network Security Group
 # TODO Splat these
-$nsg = New-AzNetworkSecurityGroup -ResourceGroupName $resourceGroupName -Location $location -Name NSG-FrontEnd -SecurityRules $rule1,$rule2,$rule3 
-$nsg | Set-AzNetworkSecurityGroup
-
+function Create-NSG {
+  [CmdletBinding()]
+  Param(
+      [Parameter(Mandatory)]
+      [String]$resourceGroupName,
+      [Parameter(Mandatory)] 
+      [String]$location
+  )
+  if(!(Get-AzNetworkSecurityGroup -ResourceGroupName $resourceGroupName -Location $location -Name NSG-FrontEnd -ErrorAction SilentlyContinue))
+    {
+      $nsg = New-AzNetworkSecurityGroup -ResourceGroupName $resourceGroupName -Location $location -Name NSG-FrontEnd -SecurityRules $rule1,$rule2,$rule3 
+      $nsg | Set-AzNetworkSecurityGroup
+    }
+}
+$nsg = Create-NSG $resourceGroupName $location
 # Create Networking Resources and configure
 # TODO Add parameter bindings to the function
 function Create-Networking {
