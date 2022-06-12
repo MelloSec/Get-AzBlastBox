@@ -42,12 +42,9 @@ function Allow-RDP {
       [Parameter(Mandatory)]
       [String]$ip 
   )
-  if(!(Get-AzNetworkSecurityRuleConfig -Name rdp-rule -ErrorAction SilentlyContinue))
-    {
       New-AzNetworkSecurityRuleConfig -Name rdp-rule -Description "Allow RDP" `
       -Access Allow -Protocol Tcp -Direction Inbound -Priority 101 -SourceAddressPrefix `
       "$ip" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389
-    }
 }
 $rule1 = Allow-RDP $myip
 
@@ -57,12 +54,9 @@ function Allow-HTTP {
       [Parameter(Mandatory)]
       [String] $ip 
   )
-  if(!(Get-AzNetworkSecurityRuleConfig -Name http-rule -ErrorAction SilentlyContinue))
-    {
       New-AzNetworkSecurityRuleConfig -Name http-rule -Description "Allow HTTP" `
       -Access Allow -Protocol Tcp -Direction Inbound -Priority 102 -SourceAddressPrefix `
       "$ip" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 80
-    }  
 }
 $rule2 = Allow-HTTP $myip
 
@@ -72,12 +66,9 @@ function Allow-HTTPS {
       [Parameter(Mandatory)]
       [String] $ip 
   )
-  if(!(Get-AzNetworkSecurityRuleConfig -Name https-rule -ErrorAction SilentlyContinue))
-    {
       New-AzNetworkSecurityRuleConfig -Name https-rule -Description "Allow HTTPs" `
       -Access Allow -Protocol Tcp -Direction Inbound -Priority 103 -SourceAddressPrefix `
       "$ip" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 443
-    }
 }
 $rule3 = Allow-HTTPS $myip
 
@@ -89,13 +80,10 @@ function Allow-Custom {
       [Parameter(Mandatory)] 
       [String] $port
   )
-  if(!(Get-AzNetworkSecurityRuleConfig -Name custom-rule -ErrorAction SilentlyContinue))
-    {
       New-AzNetworkSecurityRuleConfig -Name custom-rule -Description "Allow Custom NSG rules" `
       -Access Allow -Protocol Tcp -Direction Inbound -Priority 104 -SourceAddressPrefix `
       "$ip" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange $port;
       Write-Output "Opening $port for $ip"
-    }
 }
 $rule4 = Allow-Custom -ip $myip -port 22 
 
@@ -110,10 +98,10 @@ function Create-NSG {
       [String]$location
   )
   if(!(Get-AzNetworkSecurityGroup -ResourceGroupName $resourceGroupName -Location $location -Name NSG-FrontEnd -ErrorAction SilentlyContinue))
-    {
+      {
       $nsg = New-AzNetworkSecurityGroup -ResourceGroupName $resourceGroupName -Location $location -Name NSG-FrontEnd -SecurityRules $rule1,$rule2,$rule3 
       $nsg | Set-AzNetworkSecurityGroup
-    }
+      }
 }
 $nsg = Create-NSG $resourceGroupName $location
 # Create Networking Resources and configure
