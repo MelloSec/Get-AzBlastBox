@@ -34,6 +34,7 @@ function Create-RG {
   }
 }
 $rg = Create-RG $resourceGroupName $location
+
   # Using our current host's public ip, we create and open NSG rules allowing RDP, SSH and HTTP/s traffic from that source address 
 function Allow-RDP {
   [CmdletBinding()]
@@ -49,6 +50,7 @@ function Allow-RDP {
     }
 }
 $rule1 = Allow-RDP $myip
+
 function Allow-HTTP {
   [CmdletBinding()]
   Param(
