@@ -18,6 +18,7 @@ $CloudDev = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegroup
 # Select which Image to use, this gets used in the creation of the VM function later on. We should figure out how to do it better, with parameters on that function and a default value to malwaredev
 $image = $MalwareDev
 
+
 # Check to see if the resource group exists, if it doesn't it will create it. If it does, the script will ask if you want to add it into the existing group or not.
 function Create-RG {
   [CmdletBinding()]
