@@ -134,8 +134,8 @@ $vm = Create-VM $image.Id
 # Create a function to grab your test Resource Group and trash it. 
 # When you're done, just type "Clean-Up" in the terminal, powershell will grab the RG we just created and destroy it
 function Clean-Up {
-  Get-AzResourceGroup -Name $resourceGroupName | Remove-AzResourceGroup -AsJob
-  Get-AzVirtualNetwork -Name $VNETName | Remove-AzVirtualNetwork -AsJob
-  Get-AzNetworkSecurityGroup -Name $nsgName | Remove-AzNetworkSecurityGroup -AsJob  
+  Get-AzResourceGroup -Name $resourceGroupName | Remove-AzResourceGroup 
+  Get-AzVirtualNetwork -Name $VNETName | Remove-AzVirtualNetwork 
+  Get-AzNetworkSecurityGroup -Name $nsgName | Remove-AzNetworkSecurityGroup 
 }
 
