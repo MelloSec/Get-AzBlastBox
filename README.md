@@ -3,7 +3,7 @@
 ## A set of disposable VMs configured for development or testing. 
 
 
-#### Get-AzBlastBox is the powershell version. I was aiming for idempotence and immutability, so I used powershell scripts to automate the configuration of the hosts and captured those images to Azure in a gallery. I have base images, Windows 10 or Server 2019, then layers, like common tools, then dev tools, then specialized dev tools. Visual Studio, Visual Studio with Cloud tools, Malware tools, etc.
+#### Get-AzBlastBox is the powershell version. I was aiming for idempotence and immutability, so I used powershell scripts to automate the configuration of the hosts (Hot Box) and captured those images to Azure in a gallery. I have base images, Windows 10 or Server 2019, then layers, like common tools, then dev tools, then specialized dev tools. Visual Studio, Visual Studio with Cloud tools, Malware tools, etc.
 
 #### The script takes a desired name and image, gets your subscription, checks for the resource groups existence and if it's not found begins creating the resources. Where it made sense I had it continue to do these checks for each resource.  It creates all resources with the name you specified earlier + "-RG" "-VNET" etc. It pulls your public IP address and creates rules to open the Network Security Group for you for web, RDP and PsRemote. 
 
