@@ -12,5 +12,5 @@
 The Az-BlastBox-Create is the Azure CLI version that started this, a simpler but less dynamic one. Good in a pinch!
 
 TODO:
--[] Automatically RDP to the public IP address of the machine, its pulling a different public IP now and I'm not sure what's going on there
--[] Make the parameters more functional so we can select the image, opened ports
+- [ ] Automatically RDP to the public IP address of the machine, its pulling a different public IP now and I'm not sure what's going on there
+- [ ] Make the parameters more functional so we can select the image, opened ports
