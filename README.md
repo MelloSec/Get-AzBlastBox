@@ -1,6 +1,6 @@
 # Get-AzBlastBox
 
-## A set of disposable VMs configured for development or testing. 
+## A pop-up box for testing and detonating malware
 
 
 #### Get-AzBlastBox is the powershell version. I was aiming for idempotence and immutability, so I used powershell scripts to automate the configuration of the hosts (Hot Box) and captured those images to Azure in a gallery. I have base images, Windows 10 or Server 2019, then layers, like common tools, then dev tools, then specialized dev tools. Visual Studio, Visual Studio with Cloud tools, Malware tools, etc.
