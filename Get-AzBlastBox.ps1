@@ -118,6 +118,8 @@ function Create-Networking {
     New-AzVirtualNetwork -Name $VNetName -ResourceGroupName $resourceGroupName -Location $location -AddressPrefix "10.0.0.0/16" -Subnet $frontendSubnet,$backendSubnet
   }
 Create-Networking
+
+$PIP = New-AzPublicIpAddress -Name $pubName -DomainNameLabel $VMName.tolower() -ResourceGroupName $resourceGroupName -Location $location -AllocationMethod Dynamic
 function Create-VM {
   [CmdletBinding()]
   Param(
@@ -127,21 +129,21 @@ function Create-VM {
     { 
       $vm = New-AzVm -Name $VMName -ResourceGroupName $resourceGroupName `
       -Size Standard_B2ms -VirtualNetworkName $VNetName -SubnetName Subnet -SecurityGroupName $nsgName `
-      -ImageReferenceId $image -NetworkInterfaceDeleteOption Delete -OSDiskDeleteOption Delete # -AsJob
+      -ImageReferenceId $image -PublicIpAddressName $pubName -NetworkInterfaceDeleteOption Delete -OSDiskDeleteOption Delete 
     }
 }
 $vm = Create-VM $image.Id
 
 # Grab IP of VM and open RDP to that address
-# $ip = Get-AzPublicIpAddress -Name $pubName
-# $ip.Name | mstsc 
+$VM = get-azvm -name $VMName -resourcegroupname $resourcegroupName
+$ip = $VM | Get-AzPublicIpAddress
 
 # Create a function to grab your test Resource Group and trash it. 
 # When you're done, just type "Clean-Up" in the terminal, powershell will grab the RG we just created and destroy it
 function Clean-Up {
   Get-AzVm -Name $VMName -ResourceGroupName $resourceGroupName | Remove-AzVm -ForceDeletion $true
-  Get-AzVirtualNetwork -Name $VNETName | Remove-AzVirtualNetwork 
-  Get-AzNetworkSecurityGroup -Name $nsgName | Remove-AzNetworkSecurityGroup 
-  Get-AzResourceGroup -Name $resourceGroupName | Remove-AzResourceGroup 
+  Get-AzVirtualNetwork -Name $VNETName | Remove-AzVirtualNetwork -force
+  Get-AzNetworkSecurityGroup -Name $nsgName | Remove-AzNetworkSecurityGroup -Force
+  Get-AzResourceGroup -Name $resourceGroupName | Remove-AzResourceGroup -Force
 }
 
