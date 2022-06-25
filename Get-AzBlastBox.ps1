@@ -1,4 +1,9 @@
-﻿Import-Module Az
+﻿#TODO If not moduled installed, imported, 
+#TODO if not account connected already connect-azaccoint
+
+# Install-Module Az
+# Import-Module Az
+# Connect-AzAccount
 
 $location = "East US"
 $subscription = (Get-AzSubscription -TenantId $tenant | where-object -Property "State" -eq "Enabled"| select-object -Property Id)
