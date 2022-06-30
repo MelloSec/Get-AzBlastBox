@@ -1,4 +1,9 @@
-﻿Import-Module Az
+﻿#TODO If not moduled installed, imported, 
+#TODO if not account connected already connect-azaccoint
+
+# Install-Module Az
+# Import-Module Az
+# Connect-AzAccount
 
 $location = "East US"
 $subscription = (Get-AzSubscription -TenantId $tenant | where-object -Property "State" -eq "Enabled"| select-object -Property Id)
@@ -134,8 +139,8 @@ $vm = Create-VM $image.Id
 # Create a function to grab your test Resource Group and trash it. 
 # When you're done, just type "Clean-Up" in the terminal, powershell will grab the RG we just created and destroy it
 function Clean-Up {
-  Get-AzResourceGroup -Name $resourceGroupName | Remove-AzResourceGroup 
+  Get-AzVm -Name $VMName -ResourceGroupName $resourceGroupName | Remove-AzVm -ForceDeletion $true
   Get-AzVirtualNetwork -Name $VNETName | Remove-AzVirtualNetwork 
   Get-AzNetworkSecurityGroup -Name $nsgName | Remove-AzNetworkSecurityGroup 
+  Get-AzResourceGroup -Name $resourceGroupName | Remove-AzResourceGroup 
 }
-
