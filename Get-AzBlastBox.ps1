@@ -1,8 +1,10 @@
 ﻿# If module not found locally install and import
-if(!(Get-Module -ListAvailable -Name Azure)) { Install-Module Az; Import-Module Az }
-
 # if no account currently in use, prompt user to log in wioth their azure account
-if(!(get-azcontext)){ Connect-AzAccount } 
+function Set-Context {
+  if(!(Get-Module -ListAvailable -Name Azure)) { Install-Module Az; Import-Module Az }
+  if(!(get-azcontext)){ Connect-AzAccount } 
+}
+Set-Context
 
 $location = "East US"
 $subscription = (Get-AzSubscription -TenantId $tenant | where-object -Property "State" -eq "Enabled"| select-object -Property Id)
