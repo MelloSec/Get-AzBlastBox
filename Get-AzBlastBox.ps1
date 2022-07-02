@@ -134,9 +134,18 @@ function Create-VM {
 }
 $vm = Create-VM $image.Id
 
-# Grab IP of VM and open RDP to that address
-$VM = get-azvm -name $VMName -resourcegroupname $resourcegroupName
-$ip = $VM | Get-AzPublicIpAddress
+function Get-PublicIP {
+  [CmdletBinding()]
+  Param(
+      [Parameter(Mandatory)]
+      [String]$VMName,
+      [Parameter(Mandatory)]
+      [String]$resourceGroupName
+  )
+  $VM = Get-AzVM -Name $VMName -ResourceGroupName $resourceGroupName
+  $ip = $VM | Get-AzPublicIpAddress
+}
+$ip = Get-PublicIP $VMName $resourceGroupName
 
 # Create a function to grab your test Resource Group and trash it. 
 # When you're done, just type "Clean-Up" in the terminal, powershell will grab the RG we just created and destroy it
@@ -147,3 +156,4 @@ function Clean-Up {
   Get-AzResourceGroup -Name $resourceGroupName | Remove-AzResourceGroup -Force
 }
 
+# I need a function retrieveing the public IP address of the VM using Aure Powershell
