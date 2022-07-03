@@ -1,0 +1,1 @@
+wget https://raw.githubusercontent.com/MelloSec/PsSec/main/Set-CliSwitch.ps1

@@ -1,4 +1,14 @@
-﻿# If module not found locally install and import
+﻿function Get-AzBlastBox {
+    param(
+        [Switch] $MalwareDev,
+        [Switch] $CloudDev,
+        [Switch] $Win10Ent
+    )
+    $image = $MalwareDev ? "Malware" : $CloudDev ? "Cloud" : $Win10Ent ? "Win10Ent" : "Win10"
+    Write-Output "Image selected is $image"
+
+
+# If module not found locally install and import
 # if no account currently in use, prompt user to log in wioth their azure account
 function Set-Context {
   if(!(Get-Module -ListAvailable -Name Azure)) { Install-Module Az; Import-Module Az }
@@ -144,4 +154,6 @@ function Clean-Up {
   Get-AzVirtualNetwork -Name $VNETName | Remove-AzVirtualNetwork 
   Get-AzNetworkSecurityGroup -Name $nsgName | Remove-AzNetworkSecurityGroup 
   Get-AzResourceGroup -Name $resourceGroupName | Remove-AzResourceGroup 
+ }
 }
+Get-AzBlastBox
