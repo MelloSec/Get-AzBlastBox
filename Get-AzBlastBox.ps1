@@ -20,9 +20,11 @@ $Server2019 = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegro
 $VS2019 = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegroupname $gallery1.ResourceGroupName -galleryImageDefinitionName 'VS2019'
 $MalwareDev = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegroupname $gallery1.ResourceGroupName -galleryImageDefinitionName 'MalwareDev'
 $CloudDev = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegroupname $gallery1.ResourceGroupName -galleryImageDefinitionName 'CloudDev'
+$FlareVM = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegroupname $gallery1.ResourceGroupName -galleryImageDefinitionName 'FlareVM'
+$Win10Ent = get-azgalleryimageversion -galleryname $gallery1.Name -resourcegroupname $gallery1.ResourceGroupName -galleryImageDefinitionName 'Win10-Ent'
 
 # Select which Image to use, this gets used in the creation of the VM function later on. We should figure out how to do it better, with parameters on that function and a default value to malwaredev
-$image = $MalwareDev
+$image = $Win10Ent
 
 
 # Check to see if the resource group exists, if it doesn't it will create it. If it does, the script will ask if you want to add it into the existing group or not.
